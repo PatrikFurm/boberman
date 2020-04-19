@@ -94,6 +94,7 @@ export default class Player extends Phaser.GameObjects.Sprite {
             }
             else {
                 this.anims.stop();
+                this.setFrame(10);
             }
 
             this.name.setPosition(this.body.position.x + 13.5, this.body.position.y - 10);
