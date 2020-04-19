@@ -2,17 +2,18 @@
   "name": "Multiplayer_Bomberman_Furmanek",
   "version": "1.1.0",
   "description": "Multiplayer Bomberman",
-  "main": "src/index.js",
+  "main": "app.js",
   "scripts": {
-    "build": "webpack --config webpack/prod.js ",
-    "start": "webpack-dev-server --config webpack/base.js --open"
+    "server": "webpack && node app.js",
+    "start": "node app.js"
   },
   "repository": {
     "type": "git",
     "url": "https://github.com/PatrikFurm/boberman"
   },
   "engines": {
-    "node": "10.16.0"
+    "node": "10.16.0",
+    "yarn": "1.22.4"
   },
   "author": "Patrik Furmanek",
   "license": "MIT",
@@ -33,6 +34,12 @@
     "webpack-merge": "^4.2.2"
   },
   "dependencies": {
-    "phaser": "^3.20.1"
+    "phaser": "^3.20.1",
+    "express": "^4.17.1",
+    "fs": "^0.0.1-security",
+    "path": "^0.12.7",
+    "socket.io": "^2.3.0",
+    "uuid": "^3.4.0",
+    "yarn": "^1.22.4"
   }
 }
