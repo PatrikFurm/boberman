@@ -11,6 +11,9 @@
     "type": "git",
     "url": "git+https://github.com/photonstorm/phaser3-project-template.git"
   },
+  "engines": {
+    "node": "10.16.0"
+  },
   "author": "Patrik Furmanek",
   "license": "MIT",
   "licenseUrl": "http://www.opensource.org/licenses/mit-license.php",
