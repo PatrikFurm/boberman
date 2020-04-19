@@ -14,8 +14,8 @@ class Play extends Phaser.Scene {
         this.currentGame = {
             map_name: data.map_name,
             players: {
-                uuid_1: { id: 1, skin: 1, name: "AnCa", spawn: { x: 6*35,  y: 4*35 }},
-                uuid_2: { id: 2, skin: 2, name: "Pato", spawn: { x: 7*35,  y: 15*35 }}
+                uuid_1: { id: 1, skin: 1, name: "Killer", spawn: { x: 6*35,  y: 4*35 }},
+                uuid_2: { id: 2, skin: 2, name: "Slayer", spawn: { x: 7*35,  y: 15*35 }}
             }
         };
     }

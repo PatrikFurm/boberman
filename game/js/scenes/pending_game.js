@@ -37,19 +37,11 @@ class Pending_game extends Phaser.Scene {
             players: {
                 uuid_1: {
                     skin: 1,
-                    name: 'AnCa'
+                    name: 'Killer'
                 },
                 uuid_2: {
                     skin: 2,
-                    name: 'Pato'
-                },
-                uuid_3: {
-                    skin: 3,
-                    name: 'Pat'
-                },
-                uuid_4: {
-                    skin: 4,
-                    name: 'Pto'
+                    name: 'Slayer'
                 }
             }
         };
