@@ -10,10 +10,15 @@ class Pending_game extends Phaser.Scene {
 
         this.leftGameButton = null;
         this.startGameButton = null;
+
+        clientSocket.on('update game', this.displayGameInfo.bind(this));
+        clientSocket.on('launch game', this.launchGame.bind(this));
+
+        clientSocket.emit('enter pending game', { game_id: this.game_id });
+
     }
 
     create() {
-        console.log(this.map_name);
         let background = this.add.image(this.cameras.main.centerX, this.cameras.main.centerY, 'lobby_menu')
             .setOrigin(0.5);
 
@@ -30,25 +35,9 @@ class Pending_game extends Phaser.Scene {
 
         this.startGameButton = this.add.text(this.cameras.main.centerX + 180, this.cameras.main.centerY + 120, 'Start Game', {fontFamily: '"sans-serif"', fontSize: '20px', color: '#ccc'})
             .setOrigin(0.5);
-
-        let dummy_game = {
-            name: "Sun game",
-            max_players: 2,
-            players: {
-                uuid_1: {
-                    skin: 1,
-                    name: 'Killer'
-                },
-                uuid_2: {
-                    skin: 2,
-                    name: 'Slayer'
-                }
-            }
-        };
-        this.displayGameInfo(dummy_game);
     }
 
-    displayGameInfo( current_game ) {
+    displayGameInfo( {current_game} ) {
         let players = Object.values(current_game.players);
 
         if ( this.playerSlots ) {
@@ -63,8 +52,9 @@ class Pending_game extends Phaser.Scene {
 
         for ( var i = 0; i < 4; i++ ){
             let _player = players[i];
+
             if  ( _player ) {
-                slotBox = new MyImage(this, offset, y, 'asset_player_prev' + _player.skin);
+                slotBox = new MyImage(this, offset, y, _player.skin + "_preview");
                 slotName = new MyText(this, offset, y + 50, _player.name, {fontSize: '20px'});
                 this.playerSlots.add(slotBox, true);
                 this.playerSlots.add(slotName, true);
@@ -99,14 +89,16 @@ class Pending_game extends Phaser.Scene {
     }
 
     leaveGameAction() {
+        clientSocket.emit('leave pending game');
         this.scene.start('Menu');
     }
 
     startGameAction() {
-        this.scene.start('Play', {
-            game_id: 1,
-            map_name: this.map_name
-        });
+        clientSocket.emit('start game');
+    }
+
+    launchGame(game) {
+        this.scene.start('Play', game);
     }
 }
 

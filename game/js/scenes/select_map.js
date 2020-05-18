@@ -39,9 +39,13 @@ class SelectMap extends Phaser.Scene {
     mapSelect(index) {
         let map_name = AVAILABLE_MAPS[index];
 
+        clientSocket.emit('create game', map_name, this.joinToNewGame.bind(this));
+    }
+
+    joinToNewGame(data) {
         this.scene.start('Pending_game', {
-            game_id: 1,
-            map_name: map_name
+            game_id: data.game_id,
+            map_name: data.map_name
         });
     }
 }

@@ -34,16 +34,16 @@
       "type": "tilelayer",
       "visible": true,
       "properties": {
-        "max_players": 3,
+        "max_players": 4,
         "collisionTiles": [1, 2],
         "empty": 3,
         "balk": 2,
         "wall": 1,
         "spawns": [
           { "col": 6,  "row": 3  },
-          { "col": 8,  "row": 14 },
-          { "col": 20, "row": 15 },
-          { "col": 22, "row": 1  }
+          { "col": 8,  "row": 15 },
+          { "col": 19, "row": 15 },
+          { "col": 23, "row": 2  }
         ]
       }
     }

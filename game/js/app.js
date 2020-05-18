@@ -6,6 +6,8 @@ import Menu from "./scenes/menu";
 import SelectMap from "./scenes/select_map";
 import Pending_game from "./scenes/pending_game";
 import Play from "./scenes/play";
+import JoinGame from "./scenes/join_game";
+import Win from "./scenes/win";
 
 
 const config = {
@@ -29,3 +31,5 @@ game.scene.add('Menu',          Menu, false);
 game.scene.add('SelectMap',     SelectMap, false);
 game.scene.add('Pending_game',  Pending_game, false);
 game.scene.add('Play',          Play, false);
+game.scene.add('JoinGame',      JoinGame, false);
+game.scene.add('Win',           Win, false);

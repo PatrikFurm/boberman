@@ -2,54 +2,65 @@ import {
     PING, TILE_SIZE, MAX_SPEED, STEP_SPEED, INITIAL_SPEED, SPEED, POWER, DELAY,
     MIN_DELAY, STEP_DELAY, INITIAL_DELAY, INITIAL_POWER, STEP_POWER
 } from './constants';
+import Info from './info';
 
 export default class Player extends Phaser.GameObjects.Sprite {
 
     constructor(data) {
-        super(data.scene, data.spawn.x - TILE_SIZE / 2, data.spawn.y - TILE_SIZE / 2, 'white_player', 10);
+        super(data.scene, data.spawn.x - TILE_SIZE / 2, data.spawn.y - TILE_SIZE / 2, data.skin, 10);
 
-        this.scene = data.scene;
-        this.id = data.id;
-        this.skin = data.skin;
-        this.alive = true;
+        console.log(data.spawn);
+
+        this.scene  = data.scene;
+        this.id     = data.id;
+        this.skin   = data.skin;
+        this.alive  = true;
 
         this._lastBombTime = 0;
 
+        /* nastavenie hraca */
         this.speed = INITIAL_SPEED;
         this.delay = INITIAL_DELAY;
+        this.power = INITIAL_POWER;
 
         this.blockLayer = data.blockLayer;
 
+        this.info = new Info({ game: this.scene, player: this });
+
+        /* pohyb */
         this.prevPosition = { x: data.spawn.x, y: data.spawn.y };
+        this.scene.time.addEvent({delay: PING, callback: this.positionUpdaterLoop, callbackScope: this, loop: true})
+
+
         this.setOrigin(0.5, 0.5);
         this.scene.add.existing(this);
 
         this.defineSelf(data.name, data.spawn.x, data.spawn.y);
 
         this.scene.anims.create({
-            key: 'up',
-            frames: this.scene.anims.generateFrameNumbers('white_player', { start: 0, end: 2 , first: 0}),
+            key: 'up' + this.skin,
+            frames: this.scene.anims.generateFrameNumbers(this.skin, { start: 0, end: 2 , first: 0}),
             frameRate: 8,
             repeat: -1
         });
 
         this.scene.anims.create({
-            key: 'down',
-            frames: this.scene.anims.generateFrameNumbers('white_player', { start: 9, end: 11, first: 9 }),
+            key: 'down' + this.skin,
+            frames: this.scene.anims.generateFrameNumbers(this.skin, { start: 9, end: 11, first: 9 }),
             frameRate: 8,
             repeat: -1
         });
 
         this.scene.anims.create({
-            key: 'left',
-            frames: this.scene.anims.generateFrameNumbers('white_player', { start: 6, end: 8, first: 6 }),
+            key: 'left' + this.skin,
+            frames: this.scene.anims.generateFrameNumbers(this.skin, { start: 6, end: 8, first: 6 }),
             frameRate: 8,
             repeat: -1
         });
 
         this.scene.anims.create({
-            key: 'right',
-            frames: this.scene.anims.generateFrameNumbers('white_player', { start: 3, end: 5 }),
+            key: 'right' + this.skin,
+            frames: this.scene.anims.generateFrameNumbers(this.skin, { start: 3, end: 5 }),
             frameRate: 8,
             repeat: -1
         });
@@ -58,9 +69,22 @@ export default class Player extends Phaser.GameObjects.Sprite {
         this.defineKeyboard()
     }
 
+    positionUpdaterLoop() {
+        if ( this.alive ) {
+            let newPosition = {x: this.body.position.x, y: this.body.position.y}
+
+            if (this.prevPosition.x !== newPosition.x || this.prevPosition.y !== newPosition.y) {
+                clientSocket.emit('update player position', newPosition);
+                this.prevPosition = newPosition;
+            }
+        }
+    }
+
     definePhysics() {
         this.scene.physics.add.existing(this);
         this.scene.physics.add.collider(this, this.blockLayer);
+
+        this.body.setSize(15,15, true);
     }
 
     defineKeyboard() {
@@ -78,40 +102,65 @@ export default class Player extends Phaser.GameObjects.Sprite {
 
             if (this.leftKey.isDown) {
                 this.body.setVelocityX(-this.speed);
-                this.anims.play('left', true);
+                this.anims.play('left' + this.skin, true);
             }
             else if (this.rightKey.isDown) {
                 this.body.setVelocityX(this.speed);
-                this.anims.play('right', true);
+                this.anims.play('right' + this.skin, true);
             }
             else if (this.upKey.isDown) {
                 this.body.setVelocityY(-this.speed);
-                this.anims.play('up', true);
+                this.anims.play('up' + this.skin, true);
             }
             else if (this.downKey.isDown) {
                 this.body.setVelocityY(this.speed);
-                this.anims.play('down', true);
+                this.anims.play('down' + this.skin, true);
             }
             else {
                 this.anims.stop();
                 this.setFrame(10);
             }
 
-            this.name.setPosition(this.body.position.x + 13.5, this.body.position.y - 10);
+            this.name.setPosition(this.body.position.x + 7.5, this.body.position.y - 22.5);
             this.name.setOrigin(0.5);
 
         }
     }
 
     handleBombs() {
-        if ( this.spaceKey.isDown ) {
-            let now = this.scene.time.now;
+        if ( this.alive ) {
+            if (this.spaceKey.isDown) {
+                let now = this.scene.time.now;
 
-            if ( now > this._lastBombTime ) {
-                this._lastBombTime = now + this.delay;
-                this.scene.onShowBomb({bomb_id: 'xxx', col: this.currentCol(), row: this.currentRow()});
+                if (now > this._lastBombTime) {
+                    this._lastBombTime = now + this.delay;
+                    //this.scene.onShowBomb({bomb_id: 'xxx', col: this.currentCol(), row: this.currentRow()});
+                    clientSocket.emit('create bomb', {col: this.currentCol(), row: this.currentRow()});
+                }
             }
         }
+    }
+
+    pickSpoil( spoil_type ){
+        if ( spoil_type === SPEED ){ this.increaseSpeed() }
+        if ( spoil_type === POWER ){ this.increasePower() }
+        if ( spoil_type === DELAY ){ this.increaseDelay() }
+    }
+
+    increaseSpeed(){
+        if (this.speed < MAX_SPEED) {
+            this.speed = this.speed + STEP_SPEED;
+        }
+    }
+
+    increaseDelay(){
+        if (this.delay > MIN_DELAY){
+            this.delay -= STEP_DELAY;
+        }
+    }
+
+    increasePower(){
+        this.power += STEP_POWER;
     }
 
     currentCol(){
@@ -120,6 +169,13 @@ export default class Player extends Phaser.GameObjects.Sprite {
 
     currentRow() {
         return Math.floor(this.body.position.y / TILE_SIZE)
+    }
+
+    becomesDead() {
+        this.alive = false
+        this.info.showDeadInfo()
+        this.destroy();
+        this.name.visible = false;
     }
 
     defineSelf(name, x, y) {

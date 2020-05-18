@@ -6,6 +6,12 @@ class Menu extends Phaser.Scene {
         this.joinGameText = "";
     }
 
+    init() {
+        this.slotsWithGame = null;
+
+        clientSocket.emit('leave pending game');
+    }
+
     create() {
         let background = this.add.image(this.cameras.main.centerX, this.cameras.main.centerY, 'main_menu');
         background.setOrigin(0.5);
@@ -22,7 +28,7 @@ class Menu extends Phaser.Scene {
             .setInteractive({useHandCursor: true})
             .on('pointerover', () => this.hoverState(this.joinGameText))
             .on('pointerout',  () => this.removeHoverState(this.joinGameText))
-            .on('pointerdown', () => this.callScene(''));
+            .on('pointerdown', () => this.callScene('join_game'));
     }
 
     hoverState(obj) {
@@ -37,10 +43,9 @@ class Menu extends Phaser.Scene {
         if ( scene == 'select_map' ) {
             this.scene.start('SelectMap')
         }
-    }
-
-    hostGameAction() {
-        this.state.start('SelectMap');
+        if ( scene == 'join_game' ) {
+            this.scene.start('JoinGame')
+        }
     }
 }
 

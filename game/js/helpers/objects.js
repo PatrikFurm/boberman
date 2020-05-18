@@ -15,3 +15,26 @@ export class MyImage extends Phaser.GameObjects.Image {
         scene.add.existing(this);
     }
 }
+
+export class GameSlots {
+    constructor({ scene, availableGames, callback, callbackContext, x, y, style }) {
+        this.group = scene.add.group();
+
+        for ( let availableGame of availableGames ) {
+            let yOffset = y;
+            let game = new Phaser.GameObjects.Text(scene, x, y,`Join Game: ${availableGame.name}`, style)
+                .setOrigin(0.5)
+                .on('pointerdown', () => this.callScene('select_map'));
+
+            yOffset += 50;
+
+            this.group.add(game);
+        }
+
+        scene.add.existing(this.group);
+    }
+
+    destroy() {
+        this.group.clear();
+    }
+}
