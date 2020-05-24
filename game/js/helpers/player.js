@@ -9,8 +9,6 @@ export default class Player extends Phaser.GameObjects.Sprite {
     constructor(data) {
         super(data.scene, data.spawn.x - TILE_SIZE / 2, data.spawn.y - TILE_SIZE / 2, data.skin, 10);
 
-        console.log(data.spawn);
-
         this.scene  = data.scene;
         this.id     = data.id;
         this.skin   = data.skin;
