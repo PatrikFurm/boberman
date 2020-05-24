@@ -77,12 +77,11 @@ var Lobby = {
 
         if ( game ) {
             pendingGames.delete(game.id);
+
+            Lobby.updateLobbyGames();
+
+            return game
         }
-
-
-        Lobby.updateLobbyGames();
-
-        return game
     },
 
     onLeaveLobby: function() {
