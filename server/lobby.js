@@ -1,7 +1,8 @@
 var { Game } = require('./entity/game');
-var pendingGames = new Map();
 
 var lobbyId = 'lobby_room';
+
+var pendingGames = new Map();
 
 var Lobby = {
     onEnterLobby: function (callback) {
@@ -74,7 +75,11 @@ var Lobby = {
     deletePendingGame: function(game_id) {
         let game = pendingGames.get(game_id);
 
-        pendingGames.delete(game.id);
+        if ( game ) {
+            pendingGames.delete(game.id);
+        }
+
+
         Lobby.updateLobbyGames();
 
         return game

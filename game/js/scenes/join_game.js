@@ -5,6 +5,8 @@ class JoinGame extends Phaser.Scene {
 
     init () {
         this.slotsWithGame = null;
+
+        clientSocket.on('display pending games', this.displayPendingGames.bind(this));
     }
 
     create() {
@@ -22,25 +24,28 @@ class JoinGame extends Phaser.Scene {
     }
 
     displayPendingGames(availableGames) {
-        if (this.slotsWithGame) {
-            this.slotsWithGame.clear(true)
+        try {
+            if (this.slotsWithGame) {
+                this.slotsWithGame.clear(true)
+            }
+
+            this.slotsWithGame = this.add.group();
+
+            let yOffset = this.cameras.main.centerY - 50;
+            let game;
+
+            for (let availableGame of availableGames) {
+
+                game = new MyText(this, this.cameras.main.centerX, yOffset, `Join Game: ${availableGame.name}`, {fontSize: '30px'});
+                game.setInteractive({useHandCursor: true})
+                    .on('pointerdown', () => this.joinGameAction(availableGame.id, availableGame.map_name));
+
+                yOffset += 40;
+
+                this.slotsWithGame.add(game);
+            }
         }
-
-        this.slotsWithGame = this.add.group();
-
-        let yOffset = this.cameras.main.centerY - 50;
-        let game;
-
-        for ( let availableGame of availableGames ) {
-
-            game = new MyText(this, this.cameras.main.centerX, yOffset, `Join Game: ${availableGame.name}`, {fontSize: '30px'});
-            game.setInteractive({useHandCursor: true})
-                .on('pointerdown', () => this.joinGameAction(availableGame.id, availableGame.map_name));
-
-            yOffset += 40;
-
-            this.slotsWithGame.add(game);
-        }
+        catch (e) {}
     }
 
     joinGameAction(game_id, map_name) {
@@ -59,7 +64,7 @@ class JoinGame extends Phaser.Scene {
     }
 
     leaveGameAction() {
-        clientSocket.emit('leave lobby');
+        //clientSocket.emit('leave lobby');
         this.scene.start('Menu');
     }
 }
