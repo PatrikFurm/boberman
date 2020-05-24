@@ -93,10 +93,15 @@ class Play extends Phaser.Scene {
     }
 
     onMovePlayer({ player_id, x, y }) {
-        let enemy = findFrom(player_id, this.enemies);
-        if (!enemy) { return }
+        try {
+            let enemy = findFrom(player_id, this.enemies);
+            if (!enemy) {
+                return
+            }
 
-        enemy.goTo({ x: x, y: y })
+            enemy.goTo({x: x, y: y})
+        }
+        catch (e) {}
     }
 
     onPlayerVsBlast(player, blast) {
