@@ -69,8 +69,8 @@ class Game {
         return Object.keys(this.players).length === 0
     }
 
-    addBomb({ col, row, power }) {
-        let bomb = new Bomb({ game: this, col: col, row: row, power: power });
+    addBomb({ col, row, power, player_id }) {
+        let bomb = new Bomb({ game: this, col: col, row: row, power: power, player_id: player_id});
         if ( this.bombs.get(bomb.id) ) {
             return false
         }

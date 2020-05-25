@@ -10,12 +10,21 @@ import Spoil from '../helpers/spoil';
 
 class Play extends Phaser.Scene {
 
+    constructor() {
+        super('Play');
+    }
+
     init(data) {
         this.currentGame = data
+
+
     }
 
 
     create() {
+        this.time.removeAllEvents();
+        this.add.displayList.removeAll();
+
         this.createMap();
         this.createPlayers();
 
@@ -48,6 +57,7 @@ class Play extends Phaser.Scene {
     }
 
     createPlayers() {
+
         for (let player of Object.values(this.currentGame.players)) {
             let setup = {
                 scene:   this,
@@ -59,6 +69,8 @@ class Play extends Phaser.Scene {
             };
 
             if (player.id === clientSocket.id) {
+                console.log('tu som');
+                if ( this.player ) this.player.destroy();
                 this.player = new Player(setup);
                 this.physics.add.existing(this.player);
                 this.physics.add.collider(this.player, this.blockLayer);
@@ -93,15 +105,15 @@ class Play extends Phaser.Scene {
     }
 
     onMovePlayer({ player_id, x, y }) {
-        try {
-            let enemy = findFrom(player_id, this.enemies);
-            if (!enemy) {
-                return
-            }
 
-            enemy.goTo({x: x, y: y})
+        let enemy = findFrom(player_id, this.enemies);
+        if (!enemy) {
+            return
         }
-        catch (e) {}
+
+        enemy.goTo({x: x, y: y})
+
+
     }
 
     onPlayerVsBlast(player, blast) {
@@ -126,7 +138,7 @@ class Play extends Phaser.Scene {
     onSpoilWasPicked({ player_id, spoil_id, spoil_type }){
 
         if (player_id === this.player.id){
-            this.player.pickSpoil(spoil_type)
+            this.player.pickSpoil(spoil_type);
         }
 
         findAndDestroyFrom(spoil_id, this.spoils)
@@ -156,7 +168,7 @@ class Play extends Phaser.Scene {
 
     onPlayerWin(winner_skin) {
         clientSocket.emit('leave game');
-
+        this.scene.stop();
         this.scene.start('Win', winner_skin);
     }
 
@@ -165,7 +177,7 @@ class Play extends Phaser.Scene {
         this.physics.add.collider(this.player, this.bombs);
     }
 
-    onDetonateBomb({ bomb_id, blastedCells  }) {
+    onDetonateBomb({ bomb_id, blastedCells, player_id  }) {
         findAndDestroyFrom(bomb_id, this.bombs);
 
         for (let cell of blastedCells) {

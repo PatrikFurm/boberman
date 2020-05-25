@@ -3,6 +3,10 @@ import { GameSlots } from '../helpers/objects';
 
 class JoinGame extends Phaser.Scene {
 
+    constructor() {
+        super('JoinGame');
+    }
+
     init () {
         this.slotsWithGame = null;
 

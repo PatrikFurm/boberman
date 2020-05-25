@@ -5,12 +5,15 @@ const { Spoil } = require('./spoil.js');
 
 class Bomb {
 
-    constructor({ game, col, row, power }) {
+    constructor({ game, col, row, power, player_id }) {
         this.id = uuidv4();
 
         this.game = game;
         this.power = power;
+        this.player_id = player_id;
         this.explosion_time = EXPLOSION_TIME;
+
+        this.detonated = false;
 
         this.col = col;
         this.row = row;

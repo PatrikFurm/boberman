@@ -13,6 +13,7 @@ const NON_DESTRUCTIBLE_CELL = 1;
 
 const INITIAL_POWER = 1;
 const STEP_POWER = 1;
+const MAX_BOMBS = 5;
 
 const SKINS = [
     'white_player', 'black_player', 'red_player', 'blue_player'

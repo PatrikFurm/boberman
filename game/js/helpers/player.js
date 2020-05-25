@@ -1,6 +1,6 @@
 import {
     PING, TILE_SIZE, MAX_SPEED, STEP_SPEED, INITIAL_SPEED, SPEED, POWER, DELAY,
-    MIN_DELAY, STEP_DELAY, INITIAL_DELAY, INITIAL_POWER, STEP_POWER
+    MIN_DELAY, STEP_DELAY, INITIAL_DELAY, INITIAL_POWER, STEP_POWER, EXPLOSION_TIME
 } from './constants';
 import Info from './info';
 
@@ -15,10 +15,11 @@ export default class Player extends Phaser.GameObjects.Sprite {
         this.alive  = true;
 
         this._lastBombTime = 0;
+        this.anim_id = '_' + Math.random().toString(36).substr(2, 9);
 
         /* nastavenie hraca */
         this.speed = INITIAL_SPEED;
-        this.delay = INITIAL_DELAY;
+        this.delay = 1;
         this.power = INITIAL_POWER;
 
         this.blockLayer = data.blockLayer;
@@ -27,6 +28,7 @@ export default class Player extends Phaser.GameObjects.Sprite {
 
         /* pohyb */
         this.prevPosition = { x: data.spawn.x, y: data.spawn.y };
+        this.scene.time.removeAllEvents();
         this.scene.time.addEvent({delay: PING, callback: this.positionUpdaterLoop, callbackScope: this, loop: true})
 
 
@@ -36,28 +38,28 @@ export default class Player extends Phaser.GameObjects.Sprite {
         this.defineSelf(data.name, data.spawn.x, data.spawn.y);
 
         this.scene.anims.create({
-            key: 'up' + this.skin,
+            key: 'up' + this.skin + this.anim_id,
             frames: this.scene.anims.generateFrameNumbers(this.skin, { start: 0, end: 2 , first: 0}),
             frameRate: 8,
             repeat: -1
         });
 
         this.scene.anims.create({
-            key: 'down' + this.skin,
+            key: 'down' + this.skin + this.anim_id,
             frames: this.scene.anims.generateFrameNumbers(this.skin, { start: 9, end: 11, first: 9 }),
             frameRate: 8,
             repeat: -1
         });
 
         this.scene.anims.create({
-            key: 'left' + this.skin,
+            key: 'left' + this.skin + this.anim_id,
             frames: this.scene.anims.generateFrameNumbers(this.skin, { start: 6, end: 8, first: 6 }),
             frameRate: 8,
             repeat: -1
         });
 
         this.scene.anims.create({
-            key: 'right' + this.skin,
+            key: 'right' + this.skin + this.anim_id,
             frames: this.scene.anims.generateFrameNumbers(this.skin, { start: 3, end: 5 }),
             frameRate: 8,
             repeat: -1
@@ -100,19 +102,19 @@ export default class Player extends Phaser.GameObjects.Sprite {
 
             if (this.leftKey.isDown) {
                 this.body.setVelocityX(-this.speed);
-                this.anims.play('left' + this.skin, true);
+                this.anims.play('left' + this.skin + this.anim_id, true);
             }
             else if (this.rightKey.isDown) {
                 this.body.setVelocityX(this.speed);
-                this.anims.play('right' + this.skin, true);
+                this.anims.play('right' + this.skin + this.anim_id, true);
             }
             else if (this.upKey.isDown) {
                 this.body.setVelocityY(-this.speed);
-                this.anims.play('up' + this.skin, true);
+                this.anims.play('up' + this.skin + this.anim_id, true);
             }
             else if (this.downKey.isDown) {
                 this.body.setVelocityY(this.speed);
-                this.anims.play('down' + this.skin, true);
+                this.anims.play('down' + this.skin + this.anim_id, true);
             }
             else {
                 this.anims.stop();
@@ -126,15 +128,10 @@ export default class Player extends Phaser.GameObjects.Sprite {
     }
 
     handleBombs() {
+        let lastPos = {col: 0, row: 0}
         if ( this.alive ) {
             if (this.spaceKey.isDown) {
-                let now = this.scene.time.now;
-
-                if (now > this._lastBombTime) {
-                    this._lastBombTime = now + this.delay;
-                    //this.scene.onShowBomb({bomb_id: 'xxx', col: this.currentCol(), row: this.currentRow()});
-                    clientSocket.emit('create bomb', {col: this.currentCol(), row: this.currentRow()});
-                }
+                  clientSocket.emit('create bomb', {col: this.currentCol(), row: this.currentRow()});
             }
         }
     }
@@ -152,8 +149,8 @@ export default class Player extends Phaser.GameObjects.Sprite {
     }
 
     increaseDelay(){
-        if (this.delay > MIN_DELAY){
-            this.delay -= STEP_DELAY;
+        if (this.delay < MIN_DELAY){
+            this.delay += STEP_DELAY;
         }
     }
 

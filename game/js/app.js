@@ -21,11 +21,11 @@ const config = {
   },
   width: 1366,
   height: 768,
-  scene: Boot
 };
 
 const game = new Phaser.Game(config);
 
+game.scene.add('Boot',          Boot, true);
 game.scene.add('Preload',       Preload, false);
 game.scene.add('Menu',          Menu, false);
 game.scene.add('SelectMap',     SelectMap, false);

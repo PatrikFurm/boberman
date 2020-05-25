@@ -9,6 +9,10 @@ class SelectMap extends Phaser.Scene {
         this.coldMapImage = "";
     }
 
+    init() {
+        this.scene.stop('Menu');
+    }
+
     create() {
         let background = this.add.image(this.cameras.main.centerX, this.cameras.main.centerY, 'select_map_menu');
         background.setOrigin(0.5);

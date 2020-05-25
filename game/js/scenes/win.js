@@ -1,5 +1,9 @@
 class Win extends Phaser.Scene {
 
+    constructor() {
+        super('Win');
+    }
+
     init(winner_skin) {
         this.skin = winner_skin
     }

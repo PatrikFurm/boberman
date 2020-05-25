@@ -2,6 +2,10 @@ import { MyImage, MyText } from '../helpers/objects';
 
 class Pending_game extends Phaser.Scene {
 
+    constructor() {
+        super('Pending_game');
+    }
+
     init(data) {
         this.game_id = data.game_id;
         this.map_name = data.map_name;
@@ -9,16 +13,19 @@ class Pending_game extends Phaser.Scene {
         this.playerSlots = null;
 
         this.leftGameButton = null;
-        this.startGameButton = null;
+        this.game_started = false;
+        this.current_game = null;
+
 
         clientSocket.on('update game', this.displayGameInfo.bind(this));
         clientSocket.on('launch game', this.launchGame.bind(this));
 
         clientSocket.emit('enter pending game', { game_id: this.game_id });
-
     }
 
     create() {
+        this.game_started = false;
+
         let background = this.add.image(this.cameras.main.centerX, this.cameras.main.centerY, 'lobby_menu')
             .setOrigin(0.5);
 
@@ -33,12 +40,19 @@ class Pending_game extends Phaser.Scene {
             .on('pointerout',  () => this.removeHoverState(this.leftGameButton))
             .on('pointerdown', () => this.leaveGameAction());
 
-        this.startGameButton = this.add.text(this.cameras.main.centerX + 180, this.cameras.main.centerY + 120, 'Start Game', {fontFamily: '"sans-serif"', fontSize: '20px', color: '#ccc'})
-            .setOrigin(0.5);
+        this.startGameButton = this.add.text(this.cameras.main.centerX + 180, this.cameras.main.centerY + 120, 'Start Game', {fontFamily: '"sans-serif"', fontSize: '30px', color: '#ccc'})
+            .setOrigin(0.5)
+            .removeInteractive()
+            .on('pointerover', () => this.hoverState(this.startGameButton))
+            .on('pointerout',  () => this.removeHoverState(this.startGameButton))
+            .on('pointerdown', () => {
+                this.startGameAction()
+            });
     }
 
     displayGameInfo( {current_game} ) {
         let players = Object.values(current_game.players);
+        this.current_game = current_game;
 
         if ( this.playerSlots ) {
             this.playerSlots.clear(true);
@@ -62,22 +76,17 @@ class Pending_game extends Phaser.Scene {
             offset += 89.5;
         }
 
+        this.startGameButton
+            .setStyle({color: '#cccccc', fontSize: '20px'})
+            .removeInteractive();
+
         if ( players.length > 1 ) {
             this.startGameButton
                 .setStyle({color: '#FFFFFF', fontSize: '30px'})
-                .setInteractive({useHandCursor: true})
-                .on('pointerover', () => this.hoverState(this.startGameButton))
-                .on('pointerout',  () => this.removeHoverState(this.startGameButton))
-                .on('pointerdown', () => this.startGameAction());
+                .setInteractive({useHandCursor: true});
         }
-        else {
-            this.startGameButton
-                .setStyle({color: '#cccccc', fontSize: '20px'})
-                .setInteractive({useHandCursor: false})
-                .on('pointerover', () => {})
-                .on('pointerout',  () => {})
-                .on('pointerdown', () => {});
-        }
+
+
     }
 
     hoverState(obj) {
@@ -95,10 +104,14 @@ class Pending_game extends Phaser.Scene {
 
     startGameAction() {
         clientSocket.emit('start game');
+        this.scene.start('Play', this.current_game);
     }
 
     launchGame(game) {
-        this.scene.start('Play', game);
+        if ( !this.game_started ) {
+            this.game_started = true;
+            this.scene.start('Play', game);
+        }
     }
 }
 
