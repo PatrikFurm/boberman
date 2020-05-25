@@ -81,7 +81,7 @@ var Play = {
                     }
 
                     for (let b of bombs[game_id]) {
-                        if (b.id != bomb.id) {
+                        if (b.id !== bomb.id) {
                             for (let cell of blastedCells) {
                                 if (b.col === cell.col && b.row === cell.row) {
                                     detonated_bombs.push(b);
@@ -92,6 +92,39 @@ var Play = {
                         }
                     }
 
+                    while ( detonated_bombs.length > 0 ) {
+                        let b = detonated_bombs.pop();
+
+                        b.detonated = true;
+                        blastedCells = b.detonate();
+                        serverSocket.sockets.to(game_id).emit('detonate bomb', {
+                            bomb_id: b.id,
+                            blastedCells: blastedCells,
+                            player_id: bomb.player_id
+                        });
+
+                        if ( b.player_id === current_player.id ) {
+                            current_player.bombs -= 1;
+                        }
+
+                        for (var i = 0; i < bombs[game_id].length; i++) {
+                            if (bombs[game_id][i].id === b.id) {
+                                bombs[game_id].splice(i, 1);
+                                break;
+                            }
+                        }
+
+                        for (var i = 0; i < bombs[game_id].length; i++) {
+                            if (b.id !== bombs[game_id][i].id) {
+                                for (let cell of blastedCells) {
+                                    if (bombs[game_id][i].col === cell.col && bombs[game_id][i].row === cell.row) {
+                                        detonated_bombs.push(bombs[game_id][i]);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    /*
                     for (let b of detonated_bombs) {
                         b.detonated = true;
                         blastedCells = b.detonate();
@@ -111,7 +144,7 @@ var Play = {
                                 break;
                             }
                         }
-                    }
+                    }*/
                 }
 
             }, bomb.explosion_time);
