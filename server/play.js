@@ -4,6 +4,7 @@ var { Game } = require('./entity/game');
 
 var runningGames = new Map();
 var bombs = {};
+var spoils = {};
 
 var Play = {
     onLeaveGame: function (data) {
@@ -17,7 +18,8 @@ var Play = {
         let game = Lobby.deletePendingGame(this.socket_game_id);
 
         runningGames.set(game.id, game);
-        bombs[game.id] = [];
+        bombs[game.id]  = [];
+        spoils[game.id] = [];
 
         //serverSocket.sockets.in(game.id).emit('launch game', game);
         this.broadcast.to(this.socket_game_id).emit('launch game', game);
@@ -71,6 +73,20 @@ var Play = {
                         player_id: bomb.player_id
                     });
 
+                    for ( let cell of blastedCells ) {
+                        for ( let spoil of spoils[game_id] ){
+                            if ( cell.row === spoil.row && cell.col === spoil.col ) {
+                                Play.onPickUpSpoil({spoil_id: spoil.id, fake: true, game_id: game_id});
+                            }
+                        }
+                    }
+
+                    for ( let cell of blastedCells ) {
+                        if ( cell.spoil ) {
+                            spoils[game_id].push(cell.spoil);
+                        }
+                    }
+
                     current_player.bombs -= 1;
 
                     for (var i = 0; i < bombs[game_id].length; i++) {
@@ -103,6 +119,20 @@ var Play = {
                             player_id: bomb.player_id
                         });
 
+                        for ( let cell of blastedCells ) {
+                            for ( let spoil of spoils[game_id] ){
+                                if ( cell.row === spoil.row && cell.col === spoil.col ) {
+                                    Play.onPickUpSpoil({spoil_id: spoil.id, fake: true, game_id: game_id});
+                                }
+                            }
+                        }
+
+                        for ( let cell of blastedCells ) {
+                            if ( cell.spoil ) {
+                                spoils[game_id].push(cell.spoil);
+                            }
+                        }
+
                         if ( b.player_id === current_player.id ) {
                             current_player.bombs -= 1;
                         }
@@ -124,27 +154,6 @@ var Play = {
                             }
                         }
                     }
-                    /*
-                    for (let b of detonated_bombs) {
-                        b.detonated = true;
-                        blastedCells = b.detonate();
-                        serverSocket.sockets.to(game_id).emit('detonate bomb', {
-                            bomb_id: b.id,
-                            blastedCells: blastedCells,
-                            player_id: bomb.player_id
-                        });
-
-                        if ( b.player_id === current_player.id ) {
-                            current_player.bombs -= 1;
-                        }
-
-                        for (var i = 0; i < bombs[game_id].length; i++) {
-                            if (bombs[game_id][i].id === b.id) {
-                                bombs[game_id].splice(i, 1);
-                                break;
-                            }
-                        }
-                    }*/
                 }
 
             }, bomb.explosion_time);
@@ -153,19 +162,44 @@ var Play = {
         }
     },
 
-    onPickUpSpoil: function({ spoil_id }) {
-        let game_id = this.socket_game_id;
-        let current_game = runningGames.get(game_id);
-        let current_player = current_game.players[this.id];
+    onPickUpSpoil: function({ spoil_id, fake, game_id }) {
+        if ( !fake ) {
+            let game_id = this.socket_game_id;
+            let current_game = runningGames.get(game_id);
+            let current_player = current_game.players[this.id];
 
-        let spoil = current_game.findSpoil(spoil_id);
+            let spoil = current_game.findSpoil(spoil_id);
 
-        if (spoil) {
-            current_game.deleteSpoil(spoil.id);
+            if (spoil) {
+                current_game.deleteSpoil(spoil.id);
+                current_player.pickSpoil(spoil.spoil_type);
 
-            current_player.pickSpoil(spoil.spoil_type);
+                serverSocket.sockets.to(game_id).emit('spoil was picked', {
+                    player_id: current_player.id,
+                    spoil_id: spoil.id,
+                    spoil_type: spoil.spoil_type
+                });
+            }
+        }
+        else {
+            let current_game = runningGames.get(game_id);
+            let spoil = current_game.findSpoil(spoil_id);
 
-            serverSocket.sockets.to(game_id).emit('spoil was picked', { player_id: current_player.id, spoil_id: spoil.id, spoil_type: spoil.spoil_type });
+            if ( spoil ) {
+                current_game.deleteSpoil(spoil.id);
+                serverSocket.sockets.to(game_id).emit('spoil was picked', {
+                    player_id: '0',
+                    spoil_id: spoil.id,
+                    spoil_type: spoil.spoil_type
+                });
+
+                for (var i = 0; i < spoils[game_id].length; i++) {
+                    if (spoils[game_id][i].id === spoil.id) {
+                        spoils[game_id].splice(i, 1);
+                        break;
+                    }
+                }
+            }
         }
     },
 
