@@ -2,4 +2,4 @@
 
 projekt z predmetu TIA
 
-[Live](https://nodejs.org)
+[Live](https://bomberman-furmanek.herokuapp.com/)
